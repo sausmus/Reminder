@@ -1,1 +1,1817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Class Reminders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="bjh-logo.png">
 
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --blue: #1a73e8;
+      --blue-soft: #e8f0fe;
+      --green: #188038;
+      --red: #d93025;
+      --yellow: #f9ab00;
+      --text: #202124;
+      --muted: #5f6368;
+      --border: #dadce0;
+      --panel: #ffffff;
+      --page: #f4f6f8;
+    }
+
+    body {
+      margin: 0;
+      padding: 26px;
+      font-family: Arial, sans-serif;
+      background: var(--page);
+      color: var(--text);
+    }
+
+    body.modal-open { overflow: hidden; }
+
+    .dashboard-back {
+      position: fixed;
+      top: 18px;
+      left: 18px;
+      z-index: 1000;
+      display: inline-flex;
+      align-items: center;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #ffffff;
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    .dashboard-back:hover {
+      background: var(--blue-soft);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    }
+
+    .app {
+      max-width: 960px;
+      margin: auto;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 22px;
+      position: relative;
+    }
+
+    .app-header h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 30px;
+    }
+
+    .bjh-logo {
+      width: 64px;
+      height: auto;
+      flex-shrink: 0;
+    }
+
+    .bjh-logo.right { transform: scaleX(-1); }
+
+    .header-bell {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      font-weight: 700;
+      color: #3c4043;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .header-count {
+      min-width: 24px;
+      height: 24px;
+      padding: 0 7px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--blue);
+      color: white;
+      font-size: 13px;
+    }
+
+    .section {
+      background: var(--panel);
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .status-row strong { color: #3c4043; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    .field label,
+    .field-label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 700;
+      color: #3c4043;
+      font-size: 14px;
+    }
+
+    select,
+    input,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    select,
+    input,
+    textarea {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: white;
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    select:focus,
+    input:focus,
+    textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(26,115,232,.12);
+    }
+
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .choice {
+      position: relative;
+    }
+
+    .choice input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .choice label {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      background: white;
+      color: #3c4043;
+      transition: .15s;
+    }
+
+    .choice label:hover { background: #f8f9fa; }
+
+    .choice input:checked + label {
+      background: var(--blue-soft);
+      border-color: #aecbfa;
+      color: #174ea6;
+      box-shadow: inset 0 0 0 1px #aecbfa;
+    }
+
+    .privacy-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .privacy-option {
+      position: relative;
+    }
+
+    .privacy-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .privacy-card {
+      height: 100%;
+      display: block;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px;
+      cursor: pointer;
+      background: white;
+      transition: .15s;
+    }
+
+    .privacy-card strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .privacy-card span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .privacy-option input:checked + .privacy-card {
+      background: var(--blue-soft);
+      border-color: #aecbfa;
+      box-shadow: inset 0 0 0 1px #aecbfa;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      min-height: 44px;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 17px;
+      cursor: pointer;
+      background: #e8eaed;
+      color: var(--text);
+      font-weight: 700;
+      transition: background .15s ease, transform .15s ease, box-shadow .15s ease;
+    }
+
+    button:hover {
+      background: #dadce0;
+    }
+
+    button:active { transform: translateY(1px); }
+
+    button.primary {
+      background: var(--blue);
+      color: white;
+    }
+
+    button.primary:hover { background: #1765cc; }
+
+    button.success {
+      background: var(--green);
+      color: white;
+    }
+
+    button.danger {
+      background: #fce8e6;
+      color: #a50e0e;
+    }
+
+    button.ghost-blue {
+      background: var(--blue-soft);
+      color: #174ea6;
+    }
+
+    .form-actions {
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .small-note {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+      line-height: 1.45;
+    }
+
+    .save-status {
+      font-size: 13px;
+      color: var(--green);
+      font-weight: 700;
+      min-height: 18px;
+    }
+
+    .reminder-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .reminder-toolbar h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .reminder-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .empty-state {
+      border: 1px dashed #c7cacf;
+      border-radius: 12px;
+      padding: 28px 18px;
+      text-align: center;
+      color: var(--muted);
+      background: #fafbfc;
+    }
+
+    .reminder-item {
+      border: 1px solid #e3e5e8;
+      border-radius: 13px;
+      padding: 14px;
+      background: #fff;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .reminder-item.overdue {
+      border-color: #f6aea8;
+      background: #fff8f7;
+    }
+
+    .reminder-item.completed {
+      opacity: .68;
+      background: #fafafa;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-top: 5px;
+      background: var(--blue);
+      box-shadow: 0 0 0 3px rgba(26,115,232,.10);
+    }
+
+    .overdue .status-dot {
+      background: var(--red);
+      box-shadow: 0 0 0 3px rgba(217,48,37,.10);
+    }
+
+    .completed .status-dot {
+      background: var(--green);
+      box-shadow: none;
+    }
+
+    .reminder-meta {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f1f3f4;
+      color: #3c4043;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .pill.private {
+      background: #fef7e0;
+      color: #8a5a00;
+    }
+
+    .pill.snoozed {
+      background: #e6f4ea;
+      color: #137333;
+    }
+
+    .due-text {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .overdue .due-text { color: #b3261e; }
+
+    .student-name {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .reminder-note {
+      line-height: 1.4;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .item-actions button {
+      min-height: 36px;
+      padding: 7px 10px;
+      font-size: 13px;
+    }
+
+    .completed-toggle {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .completed-toggle input {
+      width: 17px;
+      min-height: 17px;
+      height: 17px;
+      margin: 0;
+    }
+
+    /* REMINDER MODAL */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(32,33,36,.64);
+      backdrop-filter: blur(3px);
+    }
+
+    .modal-backdrop.visible { display: flex; }
+
+    .reminder-modal {
+      width: min(560px, 100%);
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.30);
+      padding: 26px;
+      text-align: center;
+    }
+
+    .modal-icon {
+      width: 62px;
+      height: 62px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      background: var(--blue-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+    }
+
+    .modal-eyebrow {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .reminder-modal h2 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+
+    .modal-context {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .private-message {
+      padding: 22px 16px;
+      border: 1px dashed #c8ccd1;
+      border-radius: 14px;
+      background: #fafbfc;
+      color: #3c4043;
+      line-height: 1.45;
+    }
+
+    .modal-details {
+      display: none;
+      text-align: left;
+      border: 1px solid #e3e5e8;
+      border-radius: 14px;
+      padding: 16px;
+      background: #fafbfc;
+    }
+
+    .modal-details.visible { display: block; }
+
+    .modal-student {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .modal-note {
+      font-size: 18px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 9px;
+      margin-top: 18px;
+    }
+
+    .modal-actions button {
+      min-height: 48px;
+      padding: 10px 8px;
+      font-size: 14px;
+    }
+
+    .reveal-row {
+      margin-top: 14px;
+    }
+
+    .privacy-footnote {
+      margin-top: 13px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 12px; }
+
+      .dashboard-back {
+        position: static;
+        margin-bottom: 12px;
+      }
+
+      .app-header {
+        padding-right: 0;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .app-header h1 { font-size: 23px; }
+      .bjh-logo { width: 46px; }
+
+      .header-bell {
+        position: static;
+        transform: none;
+        margin-left: 2px;
+      }
+
+      .header-bell .bell-text { display: none; }
+
+      .form-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .choice-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .privacy-grid { grid-template-columns: 1fr; }
+
+      .reminder-item {
+        grid-template-columns: auto 1fr;
+      }
+
+      .item-actions {
+        grid-column: 1 / -1;
+        justify-content: stretch;
+      }
+
+      .item-actions button { flex: 1; }
+
+      .modal-actions {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+
+<a class="dashboard-back" href="index.html">← Dashboard</a>
+
+<div class="app">
+  <div class="app-header">
+    <img src="bjh-logo.png" class="bjh-logo" alt="BJH Bobcat">
+    <h1>Class Reminders</h1>
+    <img src="bjh-logo.png" class="bjh-logo right" alt="BJH Bobcat">
+
+    <div class="header-bell" title="Open reminders">
+      <span aria-hidden="true">🔔</span>
+      <span class="bell-text">Open</span>
+      <span id="headerCount" class="header-count">0</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Schedule Status</div>
+    <div class="status-row">
+      <span id="scheduleStatus"><strong>Today:</strong> checking bell schedule…</span>
+      <span id="dataStatus">Checking roster data…</span>
+    </div>
+    <div class="small-note">
+      Reminder times are calculated from the same class-relative bell schedule logic as the Bell Countdown. A reminder stays tied to its period and trigger instead of being saved as a fixed clock time.
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">New Reminder</div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="periodSelect">Period</label>
+        <select id="periodSelect"></select>
+      </div>
+
+      <div class="field">
+        <label for="studentInput">Student <span style="font-weight:400;color:#5f6368;">(optional)</span></label>
+        <input id="studentInput" list="studentOptions" autocomplete="off" placeholder="Select or type a student name">
+        <datalist id="studentOptions"></datalist>
+      </div>
+
+      <div class="field full">
+        <label for="reminderText">Reminder</label>
+        <textarea id="reminderText" placeholder="Give Maya her field trip form"></textarea>
+      </div>
+
+      <div class="field full">
+        <span class="field-label">When</span>
+        <div class="choice-grid">
+          <div class="choice">
+            <input id="whenStart" type="radio" name="when" value="start" checked>
+            <label for="whenStart">Start of class</label>
+          </div>
+          <div class="choice">
+            <input id="whenAfter5" type="radio" name="when" value="after5">
+            <label for="whenAfter5">5 min into class</label>
+          </div>
+          <div class="choice">
+            <input id="whenBefore10" type="radio" name="when" value="before10">
+            <label for="whenBefore10">10 min before end</label>
+          </div>
+          <div class="choice">
+            <input id="whenEnd" type="radio" name="when" value="end">
+            <label for="whenEnd">End of class</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field full">
+        <span class="field-label">Reminder privacy</span>
+        <div class="privacy-grid">
+          <div class="privacy-option">
+            <input id="privacyPrivate" type="radio" name="privacy" value="private" checked>
+            <label class="privacy-card" for="privacyPrivate">
+              <strong>🔒 Private — recommended</strong>
+              <span>Shows only “Teacher Reminder” until you choose to reveal the student name and note.</span>
+            </label>
+          </div>
+          <div class="privacy-option">
+            <input id="privacyNormal" type="radio" name="privacy" value="normal">
+            <label class="privacy-card" for="privacyNormal">
+              <strong>🔔 Normal</strong>
+              <span>Shows the student name and reminder text immediately when the alert fires.</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button id="addReminder" class="primary" type="button">+ Add Reminder</button>
+      <button id="previewReminder" class="ghost-blue" type="button">Preview Alert</button>
+      <span id="saveStatus" class="save-status"></span>
+    </div>
+
+    <div id="nextOccurrenceNote" class="small-note"></div>
+  </div>
+
+  <div class="section" id="remindersSection">
+    <div class="reminder-toolbar">
+      <h2>Reminders</h2>
+      <div class="button-row">
+        <label class="completed-toggle">
+          <input id="showCompleted" type="checkbox">
+          Show completed
+        </label>
+        <button id="clearCompleted" type="button">Clear Completed</button>
+      </div>
+    </div>
+
+    <div id="reminderList" class="reminder-list"></div>
+  </div>
+</div>
+
+<div id="reminderBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="reminder-modal">
+    <div class="modal-icon" aria-hidden="true">🔔</div>
+    <div class="modal-eyebrow">Teacher Reminder</div>
+    <h2 id="modalTitle">Teacher Reminder</h2>
+    <div id="modalContext" class="modal-context"></div>
+
+    <div id="privateMessage" class="private-message">
+      This reminder is private. Open it to reveal the student name and note.
+    </div>
+
+    <div id="modalDetails" class="modal-details">
+      <div id="modalStudent" class="modal-student"></div>
+      <div id="modalNote" class="modal-note"></div>
+    </div>
+
+    <div id="revealRow" class="reveal-row">
+      <button id="revealReminder" class="primary" type="button">Open Reminder</button>
+    </div>
+
+    <div class="modal-actions">
+      <button id="modalDone" class="success" type="button">✓ Done</button>
+      <button id="snooze5" type="button">5 min</button>
+      <button id="snooze10" type="button">10 min</button>
+      <button id="snoozeEnd" type="button">End of Period</button>
+    </div>
+
+    <div class="privacy-footnote">
+      Snooze keeps the reminder unresolved. “End of Period” follows the selected class period’s end time for that reminder date.
+    </div>
+  </div>
+</div>
+
+<script src="shared/dashboard-data.js"></script>
+<script src="shared/bell-service.js"></script>
+<script>
+(() => {
+  "use strict";
+
+  const STORAGE_KEY = "teacherDashboard.classReminders.v1";
+  const BELL_STATE_KEY = "teacherDashboard.bellState.v1";
+  const PASSING_MINUTES = 4;
+  const ORIGINAL_TITLE = document.title;
+
+  const FALLBACK_SCHEDULES = {
+    regular: [
+      { name: "Period 1", end: "09:04" },
+      { name: "Period 2", end: "09:55" },
+      { name: "Snack", end: "10:09" },
+      { name: "Period 3", end: "11:00" },
+      { name: "Period 4", end: "11:51" },
+      { name: "Period 5", end: "12:42" },
+      { name: "Lunch", end: "13:13" },
+      { name: "Period 6", end: "14:04" },
+      { name: "Period 7", end: "14:55" }
+    ],
+    lateStart: [
+      { name: "Period 1", end: "09:47" },
+      { name: "Period 2", end: "10:31" },
+      { name: "Snack", end: "10:45" },
+      { name: "Period 3", end: "11:29" },
+      { name: "Period 4", end: "12:13" },
+      { name: "Period 5", end: "12:57" },
+      { name: "Lunch", end: "13:27" },
+      { name: "Period 6", end: "14:11" },
+      { name: "Period 7", end: "14:55" }
+    ],
+    minimum: [
+      { name: "Period 1", end: "08:46" },
+      { name: "Period 2", end: "09:21" },
+      { name: "Period 3", end: "09:56" },
+      { name: "Period 4", end: "10:31" },
+      { name: "Snack", end: "10:55" },
+      { name: "Period 5", end: "11:30" },
+      { name: "Period 6", end: "12:05" },
+      { name: "Period 7", end: "12:40" }
+    ]
+  };
+
+  const FALLBACK_STARTS = {
+    regular: "08:10",
+    lateStart: "09:02",
+    minimum: "08:10"
+  };
+
+  const TRIGGER_LABELS = {
+    start: "Start of class",
+    after5: "5 min into class",
+    before10: "10 min before end",
+    end: "End of class"
+  };
+
+  const el = id => document.getElementById(id);
+
+  const periodSelect = el("periodSelect");
+  const studentInput = el("studentInput");
+  const studentOptions = el("studentOptions");
+  const reminderText = el("reminderText");
+  const saveStatus = el("saveStatus");
+  const reminderList = el("reminderList");
+  const showCompleted = el("showCompleted");
+  const reminderBackdrop = el("reminderBackdrop");
+  const modalDetails = el("modalDetails");
+  const privateMessage = el("privateMessage");
+  const revealRow = el("revealRow");
+
+  let activeReminderId = "";
+  let previewReminder = null;
+  let audioContext = null;
+
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
+  }
+
+  function makeId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
+  }
+
+  function dateKey(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function dateFromKey(key) {
+    const [year, month, day] = String(key).split("-").map(Number);
+    return new Date(year, month - 1, day, 12, 0, 0, 0);
+  }
+
+  function addDays(date, amount) {
+    const next = new Date(date);
+    next.setDate(next.getDate() + amount);
+    return next;
+  }
+
+  function isWeekday(date) {
+    return date.getDay() >= 1 && date.getDay() <= 5;
+  }
+
+  function timeOnDate(timeString, date) {
+    const [hours, minutes] = String(timeString).split(":").map(Number);
+    return new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      hours,
+      minutes,
+      0,
+      0
+    );
+  }
+
+  function formatClock(date) {
+    return date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit"
+    });
+  }
+
+  function formatShortDay(date) {
+    return date.toLocaleDateString([], {
+      weekday: "short",
+      month: "short",
+      day: "numeric"
+    });
+  }
+
+  function dashboardAvailable() {
+    return Boolean(window.DashboardData);
+  }
+
+  function bellAvailable() {
+    return Boolean(window.BellService && typeof BellService.getSnapshot === "function");
+  }
+
+  function loadState() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      return {
+        version: 1,
+        reminders: Array.isArray(parsed.reminders) ? parsed.reminders : []
+      };
+    } catch (error) {
+      console.warn("Class Reminders could not be loaded.", error);
+      return { version: 1, reminders: [] };
+    }
+  }
+
+  function normalizeReminder(item) {
+    return {
+      id: String(item?.id || makeId()),
+      periodId: String(item?.periodId || "1"),
+      studentId: String(item?.studentId || ""),
+      studentName: String(item?.studentName || "").trim(),
+      note: String(item?.note || "").trim(),
+      trigger: Object.prototype.hasOwnProperty.call(TRIGGER_LABELS, item?.trigger)
+        ? item.trigger
+        : "start",
+      privacy: item?.privacy === "normal" ? "normal" : "private",
+      targetDateKey: /^\d{4}-\d{2}-\d{2}$/.test(String(item?.targetDateKey || ""))
+        ? String(item.targetDateKey)
+        : dateKey(),
+      createdAt: String(item?.createdAt || new Date().toISOString()),
+      completedAt: String(item?.completedAt || ""),
+      baseTriggeredAt: String(item?.baseTriggeredAt || ""),
+      snoozedUntil: String(item?.snoozedUntil || ""),
+      snoozeTriggeredAt: String(item?.snoozeTriggeredAt || "")
+    };
+  }
+
+  function getReminders() {
+    return loadState().reminders.map(normalizeReminder);
+  }
+
+  function saveReminders(reminders) {
+    const next = {
+      version: 1,
+      reminders: reminders.map(normalizeReminder)
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    window.dispatchEvent(new CustomEvent("teacher-dashboard-reminders-changed", {
+      detail: { reminders: clone(next.reminders) }
+    }));
+  }
+
+  function updateReminder(id, changes) {
+    const reminders = getReminders();
+    const index = reminders.findIndex(item => item.id === id);
+    if (index < 0) return null;
+
+    reminders[index] = normalizeReminder({
+      ...reminders[index],
+      ...changes
+    });
+
+    saveReminders(reminders);
+    return reminders[index];
+  }
+
+  function removeReminder(id) {
+    saveReminders(getReminders().filter(item => item.id !== id));
+  }
+
+  function getClasses() {
+    if (dashboardAvailable() && typeof DashboardData.getClasses === "function") {
+      try {
+        const classes = DashboardData.getClasses({ activeOnly: true });
+        if (Array.isArray(classes) && classes.length) {
+          return classes
+            .filter(item => Number(item.id) >= 1 && Number(item.id) <= 7)
+            .sort((a, b) => Number(a.id) - Number(b.id));
+        }
+      } catch (error) {
+        console.warn("Could not read shared class settings.", error);
+      }
+    }
+
+    return Array.from({ length: 7 }, (_, index) => ({
+      id: String(index + 1),
+      name: `Period ${index + 1}`,
+      active: true,
+      students: []
+    }));
+  }
+
+  function classLabel(periodId) {
+    const match = getClasses().find(item => String(item.id) === String(periodId));
+    return String(match?.name || `Period ${periodId}`);
+  }
+
+  function getRoster(periodId) {
+    const result = [];
+    const seen = new Set();
+
+    if (dashboardAvailable() && typeof DashboardData.getClassroomStudents === "function") {
+      try {
+        const classroom = DashboardData.getClassroomStudents(String(periodId));
+        if (Array.isArray(classroom)) {
+          classroom.forEach(student => {
+            const name = String(student?.name || "").trim();
+            if (!name) return;
+            const key = name.toLocaleLowerCase();
+            if (seen.has(key)) return;
+            seen.add(key);
+            result.push({
+              id: String(student?.id || ""),
+              name,
+              source: "classroom"
+            });
+          });
+        }
+      } catch (error) {
+        console.warn("Could not read Google Classroom roster.", error);
+      }
+    }
+
+    if (dashboardAvailable() && typeof DashboardData.getRoster === "function") {
+      try {
+        const manual = DashboardData.getRoster(String(periodId));
+        if (Array.isArray(manual)) {
+          manual.forEach(item => {
+            const name = String(item?.name ?? item ?? "").trim();
+            if (!name) return;
+            const key = name.toLocaleLowerCase();
+            if (seen.has(key)) return;
+            seen.add(key);
+            result.push({ id: "", name, source: "manual" });
+          });
+        }
+      } catch (error) {
+        console.warn("Could not read manual roster.", error);
+      }
+    }
+
+    return result.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  function getScheduleKeyForDate(date) {
+    const today = new Date();
+    const requestedKey = dateKey(date);
+    const todayKey = dateKey(today);
+
+    // Preserve a same-day manual Bell Countdown override even after school,
+    // when BellService may already be counting toward tomorrow's school start.
+    if (requestedKey === todayKey) {
+      try {
+        const bellState = JSON.parse(localStorage.getItem(BELL_STATE_KEY) || "{}");
+        const manualMode = String(bellState?.scheduleMode || "");
+        if (bellState?.dateKey === todayKey && ["regular", "lateStart", "minimum"].includes(manualMode)) {
+          return manualMode;
+        }
+      } catch (error) {}
+
+      if (bellAvailable()) {
+        try {
+          const snapshot = BellService.getSnapshot();
+          if (
+            snapshot?.targetDateKey === todayKey &&
+            ["regular", "lateStart", "minimum"].includes(snapshot.scheduleKey)
+          ) {
+            return snapshot.scheduleKey;
+          }
+        } catch (error) {
+          console.warn("Could not read today's BellService schedule.", error);
+        }
+      }
+    }
+
+    if (dashboardAvailable() && typeof DashboardData.isMinimumDayDate === "function") {
+      try {
+        if (DashboardData.isMinimumDayDate(date)) return "minimum";
+      } catch (error) {}
+    }
+
+    if (date.getDay() === 3) return "lateStart";
+    return "regular";
+  }
+
+  function scheduleLabel(key) {
+    if (key === "lateStart") return "Late Start";
+    if (key === "minimum") return "Minimum Day";
+    return "Regular";
+  }
+
+  function getSchedule(key) {
+    if (dashboardAvailable() && typeof DashboardData.getBellSchedule === "function") {
+      try {
+        const schedule = DashboardData.getBellSchedule(key);
+        if (Array.isArray(schedule) && schedule.length) return schedule;
+      } catch (error) {
+        console.warn("Could not read shared bell schedule.", error);
+      }
+    }
+
+    return clone(FALLBACK_SCHEDULES[key] || FALLBACK_SCHEDULES.regular);
+  }
+
+  function getSchoolStart(key) {
+    if (dashboardAvailable() && typeof DashboardData.getSchoolStartTime === "function") {
+      try {
+        const value = DashboardData.getSchoolStartTime(key);
+        if (/^\d{2}:\d{2}$/.test(String(value || ""))) return value;
+      } catch (error) {}
+    }
+
+    return FALLBACK_STARTS[key] || FALLBACK_STARTS.regular;
+  }
+
+  function getPeriodBounds(periodId, date) {
+    const scheduleKey = getScheduleKeyForDate(date);
+    const schedule = getSchedule(scheduleKey);
+    const entryName = `Period ${periodId}`;
+    const index = schedule.findIndex(item => item.name === entryName);
+
+    if (index < 0) return null;
+
+    const entry = schedule[index];
+    const end = timeOnDate(entry.end, date);
+    let start;
+
+    if (index === 0) {
+      start = timeOnDate(getSchoolStart(scheduleKey), date);
+    } else {
+      const previous = schedule[index - 1];
+      const previousEnd = timeOnDate(previous.end, date);
+
+      // Snack and Lunch begin immediately when the previous class ends.
+      // Teaching periods after another class, Snack, or Lunch begin after the
+      // same 4-minute passing period used by the Bell Countdown.
+      if (/^(Snack|Lunch)$/i.test(entry.name)) {
+        start = previousEnd;
+      } else {
+        start = new Date(previousEnd.getTime() + PASSING_MINUTES * 60 * 1000);
+      }
+    }
+
+    return {
+      scheduleKey,
+      scheduleLabel: scheduleLabel(scheduleKey),
+      start,
+      end,
+      entry
+    };
+  }
+
+  function triggerTime(reminder) {
+    const date = dateFromKey(reminder.targetDateKey);
+    const bounds = getPeriodBounds(reminder.periodId, date);
+    if (!bounds) return null;
+
+    let due;
+
+    switch (reminder.trigger) {
+      case "after5":
+        due = new Date(bounds.start.getTime() + 5 * 60 * 1000);
+        break;
+      case "before10":
+        due = new Date(bounds.end.getTime() - 10 * 60 * 1000);
+        break;
+      case "end":
+        due = bounds.end;
+        break;
+      case "start":
+      default:
+        due = bounds.start;
+        break;
+    }
+
+    return { due, bounds };
+  }
+
+  function effectiveDue(reminder) {
+    if (reminder.snoozedUntil) {
+      const snoozeDate = new Date(reminder.snoozedUntil);
+      if (!Number.isNaN(snoozeDate.getTime())) {
+        return {
+          due: snoozeDate,
+          snoozed: true,
+          bounds: getPeriodBounds(reminder.periodId, dateFromKey(reminder.targetDateKey))
+        };
+      }
+    }
+
+    const base = triggerTime(reminder);
+    return base ? { ...base, snoozed: false } : null;
+  }
+
+  function findTargetDate(periodId) {
+    const now = new Date();
+
+    for (let offset = 0; offset < 15; offset += 1) {
+      const candidate = addDays(now, offset);
+      candidate.setHours(12, 0, 0, 0);
+
+      if (!isWeekday(candidate)) continue;
+
+      const bounds = getPeriodBounds(periodId, candidate);
+      if (!bounds) continue;
+
+      if (offset === 0) {
+        // If that class has not ended yet, the reminder belongs to today even
+        // when the selected trigger time has already passed. In that case it
+        // becomes immediately due rather than silently jumping to tomorrow.
+        if (bounds.end > now) return dateKey(candidate);
+        continue;
+      }
+
+      return dateKey(candidate);
+    }
+
+    return dateKey(now);
+  }
+
+  function getSelectedTrigger() {
+    return document.querySelector('input[name="when"]:checked')?.value || "start";
+  }
+
+  function getSelectedPrivacy() {
+    return document.querySelector('input[name="privacy"]:checked')?.value || "private";
+  }
+
+  function formReminder({ forPreview = false } = {}) {
+    const periodId = String(periodSelect.value || "1");
+    const note = reminderText.value.trim();
+    const studentName = studentInput.value.trim();
+    const roster = getRoster(periodId);
+    const rosterMatch = roster.find(item => item.name.toLocaleLowerCase() === studentName.toLocaleLowerCase());
+
+    return normalizeReminder({
+      id: forPreview ? "preview" : makeId(),
+      periodId,
+      studentId: rosterMatch?.id || "",
+      studentName,
+      note,
+      trigger: getSelectedTrigger(),
+      privacy: getSelectedPrivacy(),
+      targetDateKey: findTargetDate(periodId),
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  function validateForm() {
+    if (!reminderText.value.trim()) {
+      reminderText.focus();
+      saveStatus.textContent = "Enter a reminder first.";
+      return false;
+    }
+
+    return true;
+  }
+
+  function resetFormAfterAdd() {
+    studentInput.value = "";
+    reminderText.value = "";
+    el("whenStart").checked = true;
+    el("privacyPrivate").checked = true;
+    updateOccurrencePreview();
+  }
+
+  function renderPeriods() {
+    const previous = periodSelect.value;
+    const classes = getClasses();
+    periodSelect.innerHTML = "";
+
+    classes.forEach(item => {
+      const option = document.createElement("option");
+      option.value = String(item.id);
+      option.textContent = String(item.name || `Period ${item.id}`);
+      periodSelect.appendChild(option);
+    });
+
+    const validPrevious = classes.some(item => String(item.id) === previous);
+
+    if (validPrevious) {
+      periodSelect.value = previous;
+    } else if (dashboardAvailable() && typeof DashboardData.getCurrentClassId === "function") {
+      try {
+        const current = String(DashboardData.getCurrentClassId());
+        if (classes.some(item => String(item.id) === current)) {
+          periodSelect.value = current;
+        }
+      } catch (error) {}
+    }
+
+    if (!periodSelect.value && classes.length) periodSelect.value = String(classes[0].id);
+    renderStudents();
+  }
+
+  function renderStudents() {
+    const roster = getRoster(periodSelect.value);
+    studentOptions.innerHTML = "";
+
+    roster.forEach(student => {
+      const option = document.createElement("option");
+      option.value = student.name;
+      studentOptions.appendChild(option);
+    });
+
+    if (roster.some(item => item.source === "classroom")) {
+      el("dataStatus").textContent = `Google Classroom roster available • ${roster.length} students in selected class`;
+    } else if (roster.length) {
+      el("dataStatus").textContent = `Manual roster available • ${roster.length} students in selected class`;
+    } else {
+      el("dataStatus").textContent = "No roster loaded • student name can still be typed";
+    }
+  }
+
+  function updateScheduleStatus() {
+    const today = new Date();
+    const key = getScheduleKeyForDate(today);
+    let suffix = "Auto schedule";
+
+    if (bellAvailable()) {
+      try {
+        const snapshot = BellService.getSnapshot();
+        suffix = snapshot.scheduleMode === "auto" ? "Auto schedule" : "Bell Countdown override";
+      } catch (error) {}
+    }
+
+    el("scheduleStatus").innerHTML = `<strong>Today:</strong> ${scheduleLabel(key)} • ${suffix}`;
+  }
+
+  function updateOccurrencePreview() {
+    const periodId = String(periodSelect.value || "1");
+    const targetDateKey = findTargetDate(periodId);
+    const sample = normalizeReminder({
+      periodId,
+      trigger: getSelectedTrigger(),
+      targetDateKey
+    });
+    const timing = triggerTime(sample);
+
+    if (!timing) {
+      el("nextOccurrenceNote").textContent = "Could not calculate this class period from the bell schedule.";
+      return;
+    }
+
+    const targetDate = dateFromKey(targetDateKey);
+    const todayKey = dateKey();
+    const dayLabel = targetDateKey === todayKey ? "today" : formatShortDay(targetDate);
+
+    el("nextOccurrenceNote").textContent =
+      `Next occurrence: ${classLabel(periodId)} • ${TRIGGER_LABELS[sample.trigger]} • ${dayLabel} at ${formatClock(timing.due)} (${timing.bounds.scheduleLabel}).`;
+  }
+
+  function reminderSortValue(reminder) {
+    const timing = effectiveDue(reminder);
+    return timing?.due?.getTime() || Number.MAX_SAFE_INTEGER;
+  }
+
+  function renderReminders() {
+    const reminders = getReminders();
+    const open = reminders.filter(item => !item.completedAt);
+    const completed = reminders.filter(item => item.completedAt);
+    el("headerCount").textContent = String(open.length);
+
+    let visible = [...open].sort((a, b) => reminderSortValue(a) - reminderSortValue(b));
+
+    if (showCompleted.checked) {
+      visible = visible.concat(
+        completed.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt))
+      );
+    }
+
+    reminderList.innerHTML = "";
+
+    if (!visible.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = open.length
+        ? "Completed reminders are hidden."
+        : "No open reminders. Add one above and let the bell schedule handle the timing.";
+      reminderList.appendChild(empty);
+      return;
+    }
+
+    const now = new Date();
+
+    visible.forEach(reminder => {
+      const timing = effectiveDue(reminder);
+      const due = timing?.due || null;
+      const isCompleted = Boolean(reminder.completedAt);
+      const isOverdue = !isCompleted && due && due <= now;
+
+      const item = document.createElement("div");
+      item.className = "reminder-item";
+      if (isCompleted) item.classList.add("completed");
+      else if (isOverdue) item.classList.add("overdue");
+
+      const dot = document.createElement("div");
+      dot.className = "status-dot";
+
+      const content = document.createElement("div");
+
+      const meta = document.createElement("div");
+      meta.className = "reminder-meta";
+
+      const periodPill = document.createElement("span");
+      periodPill.className = "pill";
+      periodPill.textContent = classLabel(reminder.periodId);
+      meta.appendChild(periodPill);
+
+      const triggerPill = document.createElement("span");
+      triggerPill.className = "pill";
+      triggerPill.textContent = TRIGGER_LABELS[reminder.trigger];
+      meta.appendChild(triggerPill);
+
+      if (reminder.privacy === "private") {
+        const privacyPill = document.createElement("span");
+        privacyPill.className = "pill private";
+        privacyPill.textContent = "🔒 Private";
+        meta.appendChild(privacyPill);
+      }
+
+      if (timing?.snoozed && !isCompleted) {
+        const snoozePill = document.createElement("span");
+        snoozePill.className = "pill snoozed";
+        snoozePill.textContent = "Snoozed";
+        meta.appendChild(snoozePill);
+      }
+
+      const dueText = document.createElement("span");
+      dueText.className = "due-text";
+
+      if (isCompleted) {
+        dueText.textContent = `Completed ${formatClock(new Date(reminder.completedAt))}`;
+      } else if (due) {
+        const dueKey = dateKey(due);
+        const todayKey = dateKey();
+        const dayText = dueKey === todayKey ? "Today" : formatShortDay(due);
+        dueText.textContent = isOverdue
+          ? `Overdue • ${dayText} ${formatClock(due)}`
+          : `${timing.snoozed ? "Snoozed until" : dayText} ${formatClock(due)}`;
+      }
+
+      meta.appendChild(dueText);
+      content.appendChild(meta);
+
+      if (reminder.studentName) {
+        const student = document.createElement("div");
+        student.className = "student-name";
+        student.textContent = reminder.studentName;
+        content.appendChild(student);
+      }
+
+      const note = document.createElement("div");
+      note.className = "reminder-note";
+      note.textContent = reminder.note;
+      content.appendChild(note);
+
+      const actions = document.createElement("div");
+      actions.className = "item-actions";
+
+      if (!isCompleted) {
+        const done = document.createElement("button");
+        done.type = "button";
+        done.className = "success";
+        done.textContent = "✓ Done";
+        done.addEventListener("click", () => completeReminder(reminder.id));
+        actions.appendChild(done);
+      }
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "danger";
+      remove.textContent = "Delete";
+      remove.addEventListener("click", () => {
+        if (confirm("Delete this reminder?")) {
+          removeReminder(reminder.id);
+          renderReminders();
+        }
+      });
+      actions.appendChild(remove);
+
+      item.append(dot, content, actions);
+      reminderList.appendChild(item);
+    });
+  }
+
+  function primeAudio() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!audioContext) audioContext = new AudioCtx();
+      if (audioContext.state === "suspended") audioContext.resume();
+    } catch (error) {}
+  }
+
+  function playReminderSound() {
+    try {
+      primeAudio();
+      if (!audioContext || audioContext.state !== "running") return;
+
+      const now = audioContext.currentTime;
+      [0, .18].forEach((offset, index) => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.type = "sine";
+        osc.frequency.value = index === 0 ? 880 : 1046.5;
+        gain.gain.setValueAtTime(0.0001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.16, now + offset + .015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + .16);
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + .18);
+      });
+    } catch (error) {}
+  }
+
+  function modalReminder() {
+    if (previewReminder) return previewReminder;
+    return getReminders().find(item => item.id === activeReminderId) || null;
+  }
+
+  function openReminderModal(reminder, { preview = false } = {}) {
+    if (!reminder) return;
+
+    previewReminder = preview ? reminder : null;
+    activeReminderId = preview ? "" : reminder.id;
+
+    const timing = triggerTime(reminder);
+    const periodText = classLabel(reminder.periodId);
+    el("modalContext").textContent = `${periodText} • ${TRIGGER_LABELS[reminder.trigger]}${timing ? ` • ${formatClock(timing.due)}` : ""}`;
+
+    el("modalStudent").textContent = reminder.studentName || "General class reminder";
+    el("modalNote").textContent = reminder.note;
+
+    const isPrivate = reminder.privacy === "private";
+    privateMessage.style.display = isPrivate ? "block" : "none";
+    revealRow.style.display = isPrivate ? "block" : "none";
+    modalDetails.classList.toggle("visible", !isPrivate);
+
+    if (preview) {
+      el("modalDone").textContent = "Close Preview";
+      el("snooze5").disabled = true;
+      el("snooze10").disabled = true;
+      el("snoozeEnd").disabled = true;
+    } else {
+      el("modalDone").textContent = "✓ Done";
+      el("snooze5").disabled = false;
+      el("snooze10").disabled = false;
+      el("snoozeEnd").disabled = false;
+    }
+
+    reminderBackdrop.classList.add("visible");
+    document.body.classList.add("modal-open");
+    document.title = `🔔 Teacher Reminder • ${ORIGINAL_TITLE}`;
+    playReminderSound();
+  }
+
+  function closeReminderModal() {
+    reminderBackdrop.classList.remove("visible");
+    document.body.classList.remove("modal-open");
+    document.title = ORIGINAL_TITLE;
+    activeReminderId = "";
+    previewReminder = null;
+    renderReminders();
+  }
+
+  function revealReminderDetails() {
+    privateMessage.style.display = "none";
+    revealRow.style.display = "none";
+    modalDetails.classList.add("visible");
+  }
+
+  function completeReminder(id) {
+    updateReminder(id, {
+      completedAt: new Date().toISOString(),
+      snoozedUntil: "",
+      snoozeTriggeredAt: ""
+    });
+
+    if (activeReminderId === id) closeReminderModal();
+    else renderReminders();
+  }
+
+  function snoozeReminder(minutes) {
+    const reminder = modalReminder();
+    if (!reminder || previewReminder) return;
+
+    const until = new Date(Date.now() + minutes * 60 * 1000);
+    updateReminder(reminder.id, {
+      snoozedUntil: until.toISOString(),
+      snoozeTriggeredAt: ""
+    });
+
+    closeReminderModal();
+  }
+
+  function snoozeToPeriodEnd() {
+    const reminder = modalReminder();
+    if (!reminder || previewReminder) return;
+
+    const bounds = getPeriodBounds(reminder.periodId, dateFromKey(reminder.targetDateKey));
+    let until = bounds?.end || null;
+
+    if (!until || until <= new Date()) {
+      until = new Date(Date.now() + 10 * 60 * 1000);
+    }
+
+    updateReminder(reminder.id, {
+      snoozedUntil: until.toISOString(),
+      snoozeTriggeredAt: ""
+    });
+
+    closeReminderModal();
+  }
+
+  function markTriggered(reminder, timing) {
+    if (timing.snoozed) {
+      return updateReminder(reminder.id, {
+        snoozeTriggeredAt: new Date().toISOString()
+      });
+    }
+
+    return updateReminder(reminder.id, {
+      baseTriggeredAt: new Date().toISOString()
+    });
+  }
+
+  function shouldAlert(reminder, timing, now) {
+    if (!timing?.due || timing.due > now || reminder.completedAt) return false;
+
+    if (timing.snoozed) {
+      return !reminder.snoozeTriggeredAt;
+    }
+
+    return !reminder.baseTriggeredAt;
+  }
+
+  function checkDueReminders() {
+    if (reminderBackdrop.classList.contains("visible")) return;
+
+    const now = new Date();
+    const due = getReminders()
+      .filter(item => !item.completedAt)
+      .map(reminder => ({ reminder, timing: effectiveDue(reminder) }))
+      .filter(item => shouldAlert(item.reminder, item.timing, now))
+      .sort((a, b) => a.timing.due - b.timing.due);
+
+    if (!due.length) return;
+
+    const first = due[0];
+    const updated = markTriggered(first.reminder, first.timing) || first.reminder;
+    openReminderModal(updated);
+  }
+
+  function refreshSharedData() {
+    renderPeriods();
+    renderStudents();
+    updateScheduleStatus();
+    updateOccurrencePreview();
+    renderReminders();
+  }
+
+  el("addReminder").addEventListener("click", () => {
+    primeAudio();
+    if (!validateForm()) return;
+
+    const reminder = formReminder();
+    const reminders = getReminders();
+    reminders.push(reminder);
+    saveReminders(reminders);
+
+    saveStatus.textContent = "Reminder added.";
+    clearTimeout(saveStatus.timer);
+    saveStatus.timer = setTimeout(() => { saveStatus.textContent = ""; }, 1800);
+
+    resetFormAfterAdd();
+    renderReminders();
+    setTimeout(checkDueReminders, 50);
+  });
+
+  el("previewReminder").addEventListener("click", () => {
+    primeAudio();
+    if (!validateForm()) return;
+    openReminderModal(formReminder({ forPreview: true }), { preview: true });
+  });
+
+  periodSelect.addEventListener("change", () => {
+    studentInput.value = "";
+    renderStudents();
+    updateOccurrencePreview();
+  });
+
+  document.querySelectorAll('input[name="when"]').forEach(input => {
+    input.addEventListener("change", updateOccurrencePreview);
+  });
+
+  showCompleted.addEventListener("change", renderReminders);
+
+  el("clearCompleted").addEventListener("click", () => {
+    const reminders = getReminders();
+    const completedCount = reminders.filter(item => item.completedAt).length;
+
+    if (!completedCount) return;
+    if (!confirm(`Clear ${completedCount} completed reminder${completedCount === 1 ? "" : "s"}?`)) return;
+
+    saveReminders(reminders.filter(item => !item.completedAt));
+    renderReminders();
+  });
+
+  el("revealReminder").addEventListener("click", revealReminderDetails);
+
+  el("modalDone").addEventListener("click", () => {
+    if (previewReminder) {
+      closeReminderModal();
+      return;
+    }
+
+    const reminder = modalReminder();
+    if (reminder) completeReminder(reminder.id);
+  });
+
+  el("snooze5").addEventListener("click", () => snoozeReminder(5));
+  el("snooze10").addEventListener("click", () => snoozeReminder(10));
+  el("snoozeEnd").addEventListener("click", snoozeToPeriodEnd);
+
+  document.addEventListener("click", primeAudio, { once: true });
+
+  window.addEventListener("storage", event => {
+    if (event.key === STORAGE_KEY) renderReminders();
+    if (dashboardAvailable() && event.key === DashboardData.storageKey) refreshSharedData();
+  });
+
+  if (dashboardAvailable() && DashboardData.changeEvent) {
+    window.addEventListener(DashboardData.changeEvent, refreshSharedData);
+  }
+
+  if (bellAvailable() && BellService.changeEvent) {
+    window.addEventListener(BellService.changeEvent, () => {
+      updateScheduleStatus();
+      updateOccurrencePreview();
+      renderReminders();
+    });
+  }
+
+  renderPeriods();
+  renderStudents();
+  updateScheduleStatus();
+  updateOccurrencePreview();
+  renderReminders();
+  checkDueReminders();
+
+  setInterval(() => {
+    updateScheduleStatus();
+    renderReminders();
+    checkDueReminders();
+  }, 1000);
+})();
+</script>
+
+</body>
+</html>
